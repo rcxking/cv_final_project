@@ -55,3 +55,7 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Ignore MP4 and JPG:
+*.mp4
+*.jpg

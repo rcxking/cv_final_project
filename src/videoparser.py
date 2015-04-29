@@ -9,13 +9,14 @@ Bryant Pong/Micah Corah
 CSCI-4962
 4/24/15
 
-Last Updated: Bryant Pong - 4/24/15 - 11:58 AM  
+Last Updated: Bryant Pong - 4/25/15 - 6:59 PM
 '''
 
 # Python Imports:
 import cv2
 import numpy as np
 import os
+import sys
 
 # Main function:
 def main(video, datafolder):
@@ -53,4 +54,8 @@ def main(video, datafolder):
 
 # Main function runner.  Pass in the path to the video you wish to parse:
 if __name__ == '__main__':
-	main("/home/bryant/cv_final_project/data/videos/puck_01.mp4", "/home/bryant/cv_final_project/data/images/puck_01/") 
+
+	if len(sys.argv) < 3:
+		print("Usage: videoparser.py <src video> <dst folder>")  
+	else:
+		main(sys.argv[1], sys.argv[2]) 
