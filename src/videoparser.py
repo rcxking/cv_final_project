@@ -9,7 +9,7 @@ Bryant Pong/Micah Corah
 CSCI-4962
 4/24/15
 
-Last Updated: Bryant Pong - 4/25/15 - 6:59 PM
+Last Updated: Bryant Pong - 4/29/15 - 7:13 PM
 '''
 
 # Python Imports:
@@ -34,15 +34,22 @@ def main(video, datafolder):
 	# The image name to write:
 	imageName = 1
 
+	# Write only 1 image every 10 frames:
+	numFrames = 0
+
 	while(vid.isOpened()):
 
 		ret, frame = vid.read()
 
-		# Write this next frame to the data folder:
-		nextFile = str(datafolder) + "IMG_" + str(imageName) + ".jpg"
-		cv2.imwrite(nextFile, frame)
+		numFrames += 1
 
-		imageName += 1
+		if numFrames % 10 == 0: 
+			# Write this next frame to the data folder:
+			nextFile = str(datafolder) + "IMG_" + str(imageName) + ".jpg"
+			cv2.imwrite(nextFile, frame)
+
+			imageName += 1
+
 
 		cv2.imshow('frame', frame)
 
