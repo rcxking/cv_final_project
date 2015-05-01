@@ -59,3 +59,7 @@ target/
 # Ignore MP4 and JPG:
 *.mp4
 *.jpg
+
+# Ignore ROS build and devel directories:
+ros_workspace/build/
+ros_workspace/devel/
