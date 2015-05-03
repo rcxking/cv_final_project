@@ -63,3 +63,6 @@ target/
 # Ignore ROS build and devel directories:
 ros_workspace/build/
 ros_workspace/devel/
+
+# vim backup files
+*~
