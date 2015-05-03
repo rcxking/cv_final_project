@@ -4,7 +4,9 @@ import pygame
 from pygame.locals import *
 import numpy as np
 import sys
+import os
 import cv2
+import cPickle as pickle
 
 pygame.init()
 
@@ -36,8 +38,9 @@ def points_of_interest(cv_image):
   return points
 
 
-if __name__ == "__main__":
-  file_name = sys.argv[1]
-  image = cv2.imread(file_name)#, cv2.LOAD_IMAGE_COLOR)
-  image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+def extract_points(file_name):    
+  image = cv2.cvtColor(file_name, cv2.COLOR_BGR2RGB)
   points = points_of_interest(image)
+
+  return points
+
