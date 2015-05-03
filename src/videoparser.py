@@ -4,12 +4,15 @@
 videoparser.py - A helper script that extracts image frames from a video via
 OpenCV.
 
+pickles a list of tuples of frames and points of interest in a file with the
+extension .dat in the same folder as the video file
+
 Computational Vision Final Project
 Bryant Pong/Micah Corah
 CSCI-4962
 4/24/15
 
-Last Updated: Bryant Pong - 4/29/15 - 7:13 PM
+Last Updated: Mica Cora - 5/3/15
 '''
 
 # Python Imports:
@@ -17,52 +20,59 @@ import cv2
 import numpy as np
 import os
 import sys
+import pickle
+from points_of_interest import points_of_interest
 
 # Main function:
-def main(video, datafolder):
+def processVideo(video):
+  print "Begin processing", video
+  file_name, extension = os.path.splitext(video)
+  data_file_name = file_name + ".dat"
 
-	# Check if the data folder to write to already exists and if not create it:
-	if not os.path.exists(datafolder):
-		print(str(datafolder) + " does not exist!  Creating directory.")
-		os.makedirs(datafolder) 
-	else:
-		print(str(datafolder) + " already exists!")
-	
-	# Load the video:
-	vid = cv2.VideoCapture(video)
+  # Check if the data file to write to already exists and if so ask whether to
+  # overwrite
+  if os.path.isfile(data_file_name):
+    print(data_file_name + " already exists!")
+    overwrite = raw_input("Data file already exists. Overwrite? Y/N: ")
+    if not overwrite.lower()[0] == 'y':
+      return
 
-	# The image name to write:
-	imageName = 1
+  # Load the video:
+  vid = cv2.VideoCapture(video)
 
-	# Write only 1 image every 10 frames:
-	numFrames = 0
+  # Write only 1 image every 10 frames:
+  num_frames = 0
 
-	while(vid.isOpened()):
+  frames_points = []
 
-		ret, frame = vid.read()
+  while(vid.isOpened()):
 
-		numFrames += 1
+    ret, frame = vid.read()
+    if not ret:
+      break
 
-		if numFrames % 10 == 0: 
-			# Write this next frame to the data folder:
-			nextFile = str(datafolder) + "IMG_" + str(imageName) + ".jpg"
-			cv2.imwrite(nextFile, frame)
+    num_frames += 1
 
-			imageName += 1
+    if num_frames % 10 == 0: 
+      frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
+      points = points_of_interest(frame)
 
-		cv2.imshow('frame', frame)
+      frames_points.append((frame, points))
 
-		if cv2.waitKey(1) & 0xFF == ord('q'):
-			break
+  vid.release()
+  cv2.destroyAllWindows()
 
-	vid.release()
-	cv2.destroyAllWindows()
+  data_file = open(data_file_name, 'w')
+  print "Pickling", video, "to", data_file_name
+  pickle.dump(frames_points, data_file)
+  print "Done processing", video
 
 # Main function runner.  Pass in the path to the video you wish to parse:
 if __name__ == '__main__':
 
-	if len(sys.argv) < 3:
-		print("Usage: videoparser.py <src video> <dst folder>")  
-	else:
-		main(sys.argv[1], sys.argv[2]) 
+  if len(sys.argv) < 2:
+    print("Usage: videoparser.py <src video> <dst folder>")  
+  else:
+    for arg in sys.argv[1:]:
+      processVideo(arg) 

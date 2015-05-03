@@ -29,7 +29,7 @@ def points_of_interest(cv_image):
         running = False
       if event.type == KEYDOWN:
         running = False
-      if event.type == MOUSEBUTTONDOWN:
+      if event.type == MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
         pos = pygame.mouse.get_pos()
         print "Point:", pos
         points = np.vstack((points, np.array(list(pos), dtype='uint8')), )
