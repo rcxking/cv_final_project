@@ -66,3 +66,13 @@ ros_workspace/devel/
 
 # vim backup files
 *~
+
+# Compiled Python files:
+*.pyc
+
+# Ignore pickled data:
+*.dat 
+
+# Ignore pickled data:
+data/
+
