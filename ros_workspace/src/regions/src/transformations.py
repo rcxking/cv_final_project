@@ -41,7 +41,8 @@ def rotateCenter(img, features, angle):
 	#print("finalTransform shape: " + str(finalTransform.shape))
 
 	# Rotate the features - NEED HELP HERE
-	featureList = [np.dot(finalTransform, np.array([ [feature[0]], [feature[1]], [0] ])).tolist() for feature in features] 
+	augmented_features = np.hstack([features, np.zeros((features.shape[0],1))])
+	featureList = np.dot(finalTransform, augmented_features.T).T
 
 	return cv2.warpAffine(img, finalTransform, (img.shape[1], img.shape[0])), featureList
 
