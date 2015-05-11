@@ -66,6 +66,7 @@ ros_workspace/devel/
 
 # vim backup files
 *~
+*.swp
 
 # Compiled Python files:
 *.pyc
