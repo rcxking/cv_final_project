@@ -8,7 +8,7 @@ Bryant Pong / Micah Corah
 CSCI-4962
 5/9/15
 
-Last Updated: Bryant Pong: 5/10/15 - 4:33 PM  
+Last Updated: Bryant Pong: 5/11/15 - 5:01 PM
 '''
 
 # Python Imports:
@@ -25,9 +25,10 @@ hand corner of the image.
 
 Arguments:
 img: The image to rotate (represented as a numpy array).
+features: The features of img
 angle: The angle to rotate (in degrees)   
 '''
-def rotateCenter(img, angle):
+def rotateCenter(img, features, angle):
 	
 	# The center of the image:
 	centerX = img.shape[1] / 2
@@ -36,7 +37,13 @@ def rotateCenter(img, angle):
 	# Homogenous matrix that represents all transformations together:
 	finalTransform = cv2.getRotationMatrix2D((centerX, centerY), angle, 1)
 
-	return cv2.warpAffine(img, finalTransform, (img.shape[1], img.shape[0]))
+	#print("finalTransform: " + str(finalTransform))
+	#print("finalTransform shape: " + str(finalTransform.shape))
+
+	# Rotate the features - NEED HELP HERE
+	featureList = [np.dot(finalTransform, np.array([ [feature[0]], [feature[1]], [0] ])).tolist() for feature in features] 
+
+	return cv2.warpAffine(img, finalTransform, (img.shape[1], img.shape[0])), featureList
 
 '''
 This function performs a perspective transformation on an image to simulate

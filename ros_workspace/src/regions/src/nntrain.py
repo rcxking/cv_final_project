@@ -8,7 +8,7 @@ Bryant Pong / Micah Corah
 CSCI-4962
 5/4/15
 
-Last Updated: Bryant Pong: 5/9/15 - 4:11 PM
+Last Updated: Bryant Pong: 5/10/15 - 6:04 PM
 '''
 
 # Python Imports:
@@ -19,10 +19,7 @@ from sklearn.linear_model import LogisticRegression # A logistic classifier
 from sklearn.pipeline import Pipeline
 import cPickle as pickle # cPickle is faster for Python 2.X 
 import os # listdir() function
-
-'''
-This function helps generate transformations  
-'''
+import transformations as tf # Custom image transformations  
 
 '''
 This function loads Pickle data containing images and the marked regions
@@ -70,12 +67,8 @@ def train():
 			print("nextImageFeatures: " + str(nextImageFeatures))				
 			'''
 			Next let's apply a series of transformations on this image and
-			its features. 
-
-			The following image transformations will be made on the images:
-			1)  	   	
+			its features.   
 			'''
-					
 			
 # Training Runner
 if __name__ == "__main__":
