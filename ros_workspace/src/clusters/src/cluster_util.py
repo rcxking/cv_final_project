@@ -40,9 +40,15 @@ def nearestPoint(p1, d1, p2, d2):
 angle between to vectors
 '''
 def innerAngle(d1, d2):
-  d1p = d1 / np.linalg.norm(d1)
-  d2p = d2 / np.linalg.norm(d2)
+  d1p = unit(d1)
+  d2p = unit(d2)
   return math.acos(np.dot(d1p, d2p))
+
+'''
+unit vector in direction v
+'''
+def unit(v):
+  return v / np.linalg.norm(v)
 
 
 '''
@@ -66,6 +72,44 @@ def kMeans(points):
   labels = kmeans.predict(points.T)
   return labels
 
+def nearAny(point, points, threshold):
+  print "cluster shape:",points.shape
+  for ii in range(points.shape[1]):
+    if np.linalg.norm(points[:,ii] - point) < threshold:
+      return True
+  return False
+
+def connectedClusters(points, threshold):
+  print "Points:", points
+  clusters = []
+  for ii in range(points.shape[1]):
+    nearby_clusters = []
+    point = points[:,ii]
+    for jj in range(len(clusters)):
+      for index in clusters[jj]:
+        if np.linalg.norm(points[:,index]- point) < threshold:
+          nearby_clusters.append(jj)
+          break
+    nearby_clusters.sort()
+    if len(nearby_clusters) == 0:
+      # new cluster
+      clusters.append([ii])
+    else:
+      clusters[nearby_clusters[0]].append(ii)
+      # append neighboring clusters
+      # going in reverse order to indices don't change
+      for jj in range(len(nearby_clusters)-1, 0, -1):
+        clusters[nearby_clusters[0]].extend(clusters[nearby_clusters[jj]])
+        clusters.pop(jj)
+  labels = np.zeros(points.shape[1], dtype=np.int)
+  print "Clusters found:", len(clusters)
+  for ii in range(len(clusters)):
+    labels[clusters[ii]] = ii
+  return labels
+
+
+
+
 def meanShift(points):
   # perform meanshift clustering of data
   meanshift = MeanShift()
@@ -74,22 +118,24 @@ def meanShift(points):
   centers = meanshift.cluster_centers_
   return np.array(labels)
 
-def analyzeClusters(points, labels, plot_result = True):
-  colors = ['b', 'c', 'g', 'y', 'p', 'r', 'k']
+def analyzeClusters(points, labels, plot_result = True, ground_truth = None):
+  colors = ['b', 'c', 'g', 'y', 'm', 'r', 'k']
 
   max_label = np.max(labels)
 
   clusters = []
   # compute clusters
   centers = []
-  for ii in range(max_label):
+  for ii in range(max_label+1):
     indices = np.nonzero(np.equal(labels, ii))
     cluster = points[:,indices]
     center = np.mean(cluster, 2)
     centers.append(center)
     clusters.append(cluster)
-  print centers
   centers = np.hstack(centers)
+  print "Centers:", centers
+  if not ground_truth is None:
+    print "Ground truth:", ground_truth
 
   # plotting
   if plot_result:
@@ -98,9 +144,93 @@ def analyzeClusters(points, labels, plot_result = True):
     for ii in range(len(clusters)):
       cluster = clusters[ii]
       ax.scatter(cluster[0,:], cluster[1,:], cluster[2,:], c=colors[ii], marker='x')
-    ax.scatter(centers[0,:], centers[1,:], centers[2,:], c='r', marker='o')
+    ax.scatter(centers[0,:], centers[1,:], centers[2,:], c='m', marker='o')
+    if not ground_truth is None:
+      ax.scatter(ground_truth[0,:], ground_truth[1,:], ground_truth[2,:], c='r', marker='o')
     plt.show()
   return centers
+
+# return intersection if good
+def computeIntersection(p1, d1, p2, d2, threshold, bounds):
+  if lineDistance(p1, d1, p2, d2) < threshold \
+      and innerAngle(d1, d2) > np.pi / 180:
+    nearest = nearestPoint(p1, d1, p2, d2)
+    # throw out points that are outside of the region of interest
+    if inBounds(nearest, bounds):
+      #print "Found correspondence:", nearest
+      return nearest
+  return None
+
+def projectPoints(p1, d1, points):
+  d1p = unit(d1)
+  vs = points - p1[:,np.newaxis]
+  return np.dot(d1p.T, vs)
+
+def bestIntersection(p1, d1, intersections, threshold):
+  d1p = unit(d1)
+  dists = projectPoints(p1, d1p, intersections)
+  assert(dists.size ==  intersections.shape[1])
+  dists.sort()
+
+  '''
+  get number of points fitting in a window of length threshold starting at each
+  point
+  '''
+  counts = np.zeros(dists.shape)
+  for ii in range(dists.size):
+    dist = dists[ii]
+    n = 1
+    while ii+n < dists.size and dists[ii+n] - dist < threshold:
+      n += 1
+    counts[ii] = n
+  max_index = np.argmax(counts)
+  count = counts[max_index]
+  est_dist = np.mean(dists[max_index:max_index+count])
+  intersection = p1 + (d1p * est_dist)
+  return intersection, count
+
+def interSectionPerLine(points, 
+                        directions,
+                        threshold_distance = 0.1,
+                        bounds = (0,1,0,1,0,1),
+                        plot_result = True,
+                        ground_truth = None):
+  num_point = points.shape[1]
+
+  intersections_by_line = []
+  counts_by_line = []
+  # get intersection per each line
+  for ii in range(num_point):
+    intersections = []
+    p1 = points[:,ii]
+    d1 = directions[:,ii]
+    for jj in range(num_point):
+      if not jj == ii:
+        p2 = points[:,jj]
+        d2 = directions[:,jj]
+        intersection = computeIntersection(p1, d1, p2, d2, threshold_distance, bounds)
+        if not intersection is None:
+          intersections.append(intersection)
+    intersections = np.array(intersections).T
+    intersection, count = bestIntersection(p1, d1, intersections, threshold_distance)
+    #assert(inBounds(intersection, bounds))
+    intersections_by_line.append(intersection)
+    counts_by_line.append(count)
+  intersections_by_line = np.array(intersections_by_line).T
+
+  max_count = max(counts_by_line)
+  if plot_result:
+    # plot figure for correspondence
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    for ii in range(len(counts_by_line)):
+      weight = counts_by_line[ii] / max_count
+      ax.scatter(intersections_by_line[0,ii], intersections_by_line[1,ii], intersections_by_line[2,ii], c=str(weight), marker='x')
+    if not ground_truth is None:
+      ax.scatter(ground_truth[0,:], ground_truth[1,:], ground_truth[2,:], c='r', marker='o')
+    plt.show()
+
+  return intersections_by_line, counts_by_line
 
 def cluster(points, 
             directions,
@@ -120,13 +250,9 @@ def cluster(points,
       p2 = points[:,jj]
       d2 = directions[:,jj]
       # interested in nearby skew lines
-      if lineDistance(p1, d1, p2, d2) < threshold_distance \
-          and innerAngle(d1, d2) > np.pi / 180:
-        nearest = nearestPoint(p1, d1, p2, d2)
-        # throw out points that are outside of the region of interest
-        if inBounds(nearest, bounds):
-          #print "Found correspondence:", nearest
-          correspondence_points.append(nearest)
+      correspondence = computeIntersection(p1, d1, p2, d2, threshold, bounds)
+      if not correspondence is None:
+        correspondence_points.append(correspondence)
   correspondence_points = np.array(correspondence_points).T
   print correspondence_points.shape
 
@@ -159,6 +285,20 @@ def plotLines(points, directions):
 
   #plt.axis([0,1,0,1,0,1])
   plt.show()
+
+def filterDistance(points, threshold):
+  filtered = []
+  good = np.zeros(points.shape[1])
+  for ii in range(points.shape[1]):
+    if not good[ii]:
+      for jj in range(ii+1, points.shape[1]):
+        if np.linalg.norm(points[:,ii] - points[:,jj]) < threshold:
+          good[ii] = 1
+          good[jj] = 1
+          filtered.append(points[:,ii])
+          filtered.append(points[:,jj])
+  filtered = np.array(filtered).T
+  return filtered
 
 '''
 Test line clustering algorithm
@@ -202,11 +342,13 @@ def testCluster(
 
   points = np.hstack([observation_points, false_positive_points])
   directions = np.hstack([observation_directions, false_positive_directions])
-  print points.shape
-  print directions.shape
   #plotLines(points, directions)
-  cluster(points, directions, ground_truth = points_of_interest,
-      threshold_distance = sigma_observation/2)
+  intersections, counts = interSectionPerLine(points, directions, ground_truth = points_of_interest,
+      threshold_distance = sigma_observation)
+  filtered_intersections = filterDistance(intersections, sigma_observation)
+  labels = connectedClusters(filtered_intersections, sigma_observation*2)
+  print "Labels", labels
+  centers = analyzeClusters(filtered_intersections, labels, plot_result = True, ground_truth = points_of_interest)
 
 if __name__ == "__main__":
   testCluster()
