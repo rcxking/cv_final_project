@@ -12,6 +12,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import math
+from sklearn.cluster import KMeans
+from sklearn.cluster import MeanShift
 
 '''
 returns point nearest to two skew lines
@@ -57,12 +59,56 @@ def inBounds(p, bounds):
          and p[1] > bounds[2] and p[1] < bounds[3] \
          and p[2] > bounds[4] and p[2] < bounds[5]
          
+def kMeans(points):
+  # perform kmeans clustering of data
+  kmeans = KMeans(4)
+  kmeans.fit(points.T)
+  labels = kmeans.predict(points.T)
+  return labels
+
+def meanShift(points):
+  # perform meanshift clustering of data
+  meanshift = MeanShift()
+  meanshift.fit(points.T)
+  labels = meanshift.labels_
+  centers = meanshift.cluster_centers_
+  return np.array(labels)
+
+def analyzeClusters(points, labels, plot_result = True):
+  colors = ['b', 'c', 'g', 'y', 'p', 'r', 'k']
+
+  max_label = np.max(labels)
+
+  clusters = []
+  # compute clusters
+  centers = []
+  for ii in range(max_label):
+    indices = np.nonzero(np.equal(labels, ii))
+    cluster = points[:,indices]
+    center = np.mean(cluster, 2)
+    centers.append(center)
+    clusters.append(cluster)
+  print centers
+  centers = np.hstack(centers)
+
+  # plotting
+  if plot_result:
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    for ii in range(len(clusters)):
+      cluster = clusters[ii]
+      ax.scatter(cluster[0,:], cluster[1,:], cluster[2,:], c=colors[ii], marker='x')
+    ax.scatter(centers[0,:], centers[1,:], centers[2,:], c='r', marker='o')
+    plt.show()
+  return centers
+
 def cluster(points, 
             directions,
             threshold_distance = 0.1,
             bounds = (0,1,0,1,0,1),
             plot_result = True,
-            ground_truth = None):
+            ground_truth = None,
+            cluster_method = kMeans):
   print "Clustering"
   num_point = points.shape[1]
 
@@ -92,6 +138,8 @@ def cluster(points,
     if not ground_truth is None:
       ax.scatter(ground_truth[0,:], ground_truth[1,:], ground_truth[2,:], c='r', marker='o')
     plt.show()
+  labels = cluster_method(correspondence_points)
+  centers = analyzeClusters(correspondence_points, labels, plot_result = plot_result)
 
 def plotLines(points, directions):
   fig = plt.figure()
@@ -158,7 +206,7 @@ def testCluster(
   print directions.shape
   #plotLines(points, directions)
   cluster(points, directions, ground_truth = points_of_interest,
-      threshold_distance = sigma_observation)
+      threshold_distance = sigma_observation/2)
 
 if __name__ == "__main__":
   testCluster()
