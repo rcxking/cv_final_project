@@ -8,7 +8,7 @@ Bryant Pong / Micah Corah
 CSCI-4962
 5/10/15
 
-Last Updated: Bryant Pong: 5/11/15 - 4:51 PM
+Last Updated: Bryant Pong: 5/12/15 - 4:22 PM
 '''
 
 # Python Imports:
@@ -24,7 +24,7 @@ This function loads pickled data of images and features
 to process.     
 '''
 def loadImages(imgFolder):
-	#return [pickle.load(imgFolder+"/"+fileName, "rb") for fileName in sorted(os.listdir(imgFolder))]
+	#return [pickle.load(open(imgFolder+"/"+fileName, "rb")) for fileName in sorted(os.listdir(imgFolder))]
 	return [pickle.load(open(imgFolder+"/20150423_152021.dat", "rb"))]
 
 # Main function:
@@ -32,20 +32,41 @@ def main():
 	
 	# Load the images to run transformations on:
 	data = loadImages("../../../../data/pickle") 
+	print("There are: " + str(len(data)) + " datasets to process")
 
-	# The list containing all of the original data and the transformations:
-	finalDataset = []	  
+	# Global dataset:
+	globalData = []
 
+			
+				
 	for dataset in data:
+
 		for img in dataset:
-			print("img is: \n" + str(img[0]))
-			print("features are: \n" + str(img[1]))
+			#print("img is: \n" + str(img[0]))
+			#print("features are: \n" + str(img[1]))
 
 			# Extract the image and feature set from each image:
 			image = img[0]
 			features = img[1] 
+			print("features type: " + str(type(features)))
+			imgWidth = image.shape[1]
+			imgHeight = image.shape[0]
 
-			finalDataset.append( (image, features) )
+			print("features: " + str(features))
+			print("image: ")
+			plt.imshow(image)
+			plt.show()
+
+			# Resize the images and features:
+			resizedImage = cv2.resize(image, (int(0.5*imgWidth),int(0.5*imgHeight)))
+			resizedFeatures = features * 0.5
+
+			globalData.append( (resizedImage, resizedFeatures) )
+
+			print("resizedFeatures: " + str(resizedFeatures))
+			print("resizedImage: ")
+			plt.imshow(resizedImage)
+			plt.show()
 
 			'''
 			Apply the following transformations to each image:  
@@ -61,37 +82,27 @@ def main():
 			'''
 
 			# Generate the rotated images:
-			for angle in xrange(-30, 31, 5):
-				rotImg, rotFeatures = tf.rotateCenter(image, features, angle)
+			
+			rotImg, rotFeatures = tf.rotateCenter(resizedImage, resizedFeatures, -10)
+			rotImg2, rotFeatures2 = tf.rotateCenter(resizedImage, resizedFeatures, 10)
 
-				print("rotFeatures: " + str(rotFeatures))
-
-				finalDataset.append( (rotImg, rotFeatures) ) 
-
-				'''
-				plt.axis("off")
-				plt.imshow(rotImg)		  
-				plt.show()
-				'''
+			globalData.append( (rotImg, rotFeatures) ) 
+			globalData.append( (rotImg2, rotFeatures2) )
 
 			# Generate transformations 13 - 14 (Perspective Transformations):
-			trans13 = tf.hTrans(image)
-			trans14 = tf.hTrans(image)
+			trans13 = tf.hTrans(resizedImage)
+			trans14 = tf.hTrans(resizedImage)
 
-			finalDataset.append( (trans13, features))
-			finalDataset.append( (trans14, features))
+			globalData.append( (trans13, resizedFeatures))
+			globalData.append( (trans14, resizedFeatures))
 			
 			# Generate transformations 15 - 16 (Saturation Transformations):
-			trans15 = tf.sTran(image, -30)
-			trans16 = tf.sTran(image, 30)
+			trans15 = tf.sTran(resizedImage, -10)
+			trans16 = tf.sTran(resizedImage, 10)
 
-			finalDataset.append( (trans15, features) )
-			finalDataset.append( (trans16, features) )
-	
+			globalData.append( (trans15, resizedFeatures) )
+			globalData.append( (trans16, resizedFeatures) )
 
-	# Write the data:
-	pickle.dump(finalDataset, open("dataset.p", "wb"))	 			
-		
 	print("data dump complete")			
 
 # Main function runner:
