@@ -15,7 +15,7 @@ def points_of_interest(cv_image):
 
   size = image.get_size()
   screen = pygame.display.set_mode(size)
-  points = np.zeros((0,2), dtype='uint8')
+  points = np.zeros((0,2), dtype='uint32')
 
   running = True
   pressed = False
@@ -32,7 +32,7 @@ def points_of_interest(cv_image):
       if event.type == MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
         pos = pygame.mouse.get_pos()
         print "Point:", pos
-        points = np.vstack((points, np.array(list(pos), dtype='uint8')), )
+        points = np.vstack((points, np.array(list(pos), dtype='uint32')), )
     clock.tick(30)
   print "Points:", points
   return points
