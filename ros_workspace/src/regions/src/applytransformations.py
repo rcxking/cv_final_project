@@ -8,7 +8,7 @@ Bryant Pong / Micah Corah
 CSCI-4962
 5/10/15
 
-Last Updated: Bryant Pong: 5/12/15 - 4:22 PM
+Last Updated: Bryant Pong: 5/12/15 - 11:46 PM
 '''
 
 # Python Imports:
@@ -37,11 +37,18 @@ def main():
 	# Global dataset:
 	globalData = []
 
-			
-				
+	datasetNum = 1
+	imgNum = 1
+	
 	for dataset in data:
 
+		print("Now extracting images from dataset: " + str(datasetNum))
+		print("There are: " + str(len(dataset)) + " images in this dataset")
+
 		for img in dataset:
+	
+			print("Now extracting features for image : " + str(imgNum) + " of dataset: " + str(datasetNum))
+
 			#print("img is: \n" + str(img[0]))
 			#print("features are: \n" + str(img[1]))
 
@@ -52,10 +59,12 @@ def main():
 			imgWidth = image.shape[1]
 			imgHeight = image.shape[0]
 
+			'''
 			print("features: " + str(features))
 			print("image: ")
 			plt.imshow(image)
 			plt.show()
+			'''
 
 			# Resize the images and features:
 			resizedImage = cv2.resize(image, (int(0.5*imgWidth),int(0.5*imgHeight)))
@@ -63,10 +72,12 @@ def main():
 
 			globalData.append( (resizedImage, resizedFeatures) )
 
+			'''
 			print("resizedFeatures: " + str(resizedFeatures))
 			print("resizedImage: ")
 			plt.imshow(resizedImage)
 			plt.show()
+			'''
 
 			'''
 			Apply the following transformations to each image:  
@@ -89,21 +100,54 @@ def main():
 			globalData.append( (rotImg, rotFeatures) ) 
 			globalData.append( (rotImg2, rotFeatures2) )
 
-			# Generate transformations 13 - 14 (Perspective Transformations):
-			trans13 = tf.hTrans(resizedImage)
-			trans14 = tf.hTrans(resizedImage)
+			'''
+			plt.imshow(rotImg)
+			plt.show()
 
-			globalData.append( (trans13, resizedFeatures))
-			globalData.append( (trans14, resizedFeatures))
+			plt.imshow(rotImg2)
+			plt.show()
+			'''
+
+			# Generate transformations 13 - 14 (Perspective Transformations):
+			trans13, trans13Features = tf.hTrans(resizedImage, resizedFeatures)
+			trans14, trans14Features = tf.hTrans(resizedImage, resizedFeatures)
+
+			'''
+			plt.imshow(trans13)
+			plt.show()
+
+			plt.imshow(trans14)
+			plt.show()
+			'''
+
+			globalData.append( (trans13, trans13Features))
+			globalData.append( (trans14, trans14Features))
 			
 			# Generate transformations 15 - 16 (Saturation Transformations):
-			trans15 = tf.sTran(resizedImage, -10)
-			trans16 = tf.sTran(resizedImage, 10)
+			trans15 = tf.sTran(resizedImage, -50)
+			trans16 = tf.sTran(resizedImage, 50)
 
 			globalData.append( (trans15, resizedFeatures) )
 			globalData.append( (trans16, resizedFeatures) )
 
+			'''
+			plt.imshow(trans15)
+			plt.show()
+
+			plt.imshow(trans16)
+			plt.show()
+			'''
+
+			imgNum += 1
+
+		imgNum = 0
+
+		datasetNum += 1
+
+	#pickle.dump(globalData, open("data.p", "wb"))
 	print("data dump complete")			
+
+	return globalData
 
 # Main function runner:
 if __name__ == "__main__":
