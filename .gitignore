@@ -75,5 +75,5 @@ ros_workspace/devel/
 *.dat 
 
 # Ignore pickled data:
-data/
+data/*
 

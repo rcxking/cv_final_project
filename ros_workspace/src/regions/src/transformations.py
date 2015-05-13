@@ -8,7 +8,7 @@ Bryant Pong / Micah Corah
 CSCI-4962
 5/9/15
 
-Last Updated: Bryant Pong: 5/12/15 - 2:02 AM
+Last Updated: Bryant Pong: 5/12/15 - 11:48 PM
 '''
 
 # Python Imports:
@@ -53,7 +53,7 @@ natural camera vibrations made while the robot is moving.
 Arguments:
 img: The input to perform a transformation on 
 '''
-def hTrans(img):
+def hTrans(img, features):
 	
 	'''
 	The following steps are performed on the input image:
@@ -72,7 +72,7 @@ def hTrans(img):
 	cornerPts = [0.0,0,cols,0,0,rows,cols,rows]
 
 	# Step 2: Generate some Gaussian Noise for each point:
-	gaussNoise = np.random.normal(0, 0.1, 8) * 2000
+	gaussNoise = np.random.normal(0, 0.1, 8) * 500
 	noisyPts = [float(cornerPts[i]+gaussNoise[i]) for i in xrange(8)]
 
 	# Step 3: Calculate the perspective matrix from the original image to the transformed image:
@@ -83,8 +83,14 @@ def hTrans(img):
 
 	pMat = cv2.getPerspectiveTransform(actualCorners, actualNoisy)
 
+	augmented_features = np.hstack([features, np.zeros((features.shape[0],1))])
+	featureList = np.dot(pMat, augmented_features.T).T
+
+	print("inbound features: " + str(features))
+	print("hTrans featureList: " + str(featureList))
+
 	# Apply the perspective matrix as a perspective transformation to the original image:
-	return cv2.warpPerspective(img, pMat, (img.shape[1], img.shape[0])) 
+	return cv2.warpPerspective(img, pMat, (img.shape[1], img.shape[0])), featureList
 
 '''
 This transformation changes the saturation in an input image to simulate
