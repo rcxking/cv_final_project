@@ -8,7 +8,7 @@ Bryant Pong / Micah Corah
 CSCI-4962
 5/10/15
 
-Last Updated: Bryant Pong: 5/12/15 - 11:46 PM
+Last Updated: Bryant Pong: 5/13/15 - 2:45 PM
 '''
 
 # Python Imports:
@@ -24,11 +24,23 @@ This function loads pickled data of images and features
 to process.     
 '''
 def loadImages(imgFolder):
+
+	data = []
+
+	for fileName in sorted(os.listdir(imgFolder)):
+		# Open the next file:
+		nextFile = open(imgFolder+"/"+fileName,"rb")
+		data.append(pickle.load(nextFile))		
+		nextFile.close()
+	'''
 	#return [pickle.load(open(imgFolder+"/"+fileName, "rb")) for fileName in sorted(os.listdir(imgFolder))]
 	return [pickle.load(open(imgFolder+"/20150423_152021.dat", "rb"))]
+	'''
+
+	return data
 
 # Main function:
-def main():
+def transform():
 	
 	# Load the images to run transformations on:
 	data = loadImages("../../../../data/pickle") 
@@ -151,6 +163,6 @@ def main():
 
 # Main function runner:
 if __name__ == "__main__":
-	main()
+	transform()
 
 

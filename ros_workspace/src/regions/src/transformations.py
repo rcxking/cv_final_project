@@ -8,7 +8,7 @@ Bryant Pong / Micah Corah
 CSCI-4962
 5/9/15
 
-Last Updated: Bryant Pong: 5/12/15 - 11:48 PM
+Last Updated: Bryant Pong: 5/13/15 - 1:56 PM
 '''
 
 # Python Imports:
@@ -83,14 +83,22 @@ def hTrans(img, features):
 
 	pMat = cv2.getPerspectiveTransform(actualCorners, actualNoisy)
 
+	rMat = pMat[0:2,0:2]
+	#print("pMat: " + str(pMat))
+	#print("rMat: " + str(rMat))
+
 	augmented_features = np.hstack([features, np.zeros((features.shape[0],1))])
 	featureList = np.dot(pMat, augmented_features.T).T
 
-	print("inbound features: " + str(features))
-	print("hTrans featureList: " + str(featureList))
+	#print("inbound features: " + str(features))
+	#print("hTrans featureList: " + str(featureList))
+
+	finalFeatureList = np.array([ [feature[0], feature[1]] for feature in featureList])
+
+	#print("finalFeatureList: " + str(finalFeatureList))
 
 	# Apply the perspective matrix as a perspective transformation to the original image:
-	return cv2.warpPerspective(img, pMat, (img.shape[1], img.shape[0])), featureList
+	return cv2.warpPerspective(img, pMat, (img.shape[1], img.shape[0])), finalFeatureList
 
 '''
 This transformation changes the saturation in an input image to simulate
