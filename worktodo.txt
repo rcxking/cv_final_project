@@ -1,0 +1,16 @@
+Bryant Work
+-----------
+1) Training Neural Network 
+	- Neural network trained on SLIDING WINDOW / represent ANY features as +1 / NO features as -1    
+2) COMPLETED -  Writing transformation functions 
+3) ROS Node for NN returns the location of the points 
+	- Keep track of which window we are looking at  
+
+Micah Work
+----------
+1) Generating test cases (many positive images) for clustering  
+2) Line projections from points in image to 3D Space 
+
+Both Work
+---------
+1) Writeup on Google Docs  
