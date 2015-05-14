@@ -141,29 +141,10 @@ def train():
 	#print("labels[:5000]: " + str(labels[:5000]))
 	#print("data length: " + str(len(data)))
 	#print("labels length: " + str(len(labels)))
-	# Train the neural network:
-	print("Now training classifier:")
-	print("data length: " + str(len(data)))
-	print("labels length: " + str(len(labels)))
-	#print("data.shape: " + str(np.array(data).shape))
-	#print("labels.shape: " + str(np.array(labels).shape))
 	print("Finally training classifier:")
-	#print("data[0]: " + str(data[0]))
 
 	#classifier.fit(np.array(data)[:len(data)/2], np.array(labels)[:len(labels)/2])
 	classifier.fit(np.array(finalData), np.array(finalLabels))
-	'''
-	print("len(data[0]: " + str(len(data[0])))
-	for i in xrange(0, len(labels), 3):
-		print("Fitting on data set: " + str(i))
-		x = np.array([data[i], data[i+1], data[i+2]])
-		y = np.array([labels[i], labels[i+1], labels[i+2]])
-		print("x.shape: " + str(x.shape))
-		print("y.shape: " + str(y.shape))
-		classifier.fit(x, y)
-	'''
-
-	#classifier.fit(np.array(data)[:len(data)/2], np.array(labels)[:len(labels)/2])
 	print("Done training classifier:")
 
 	print("Now writing classifier")
