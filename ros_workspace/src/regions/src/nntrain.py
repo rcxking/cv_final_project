@@ -20,7 +20,6 @@ from sklearn.pipeline import Pipeline
 import slidingwindow as sw
 import cPickle as pickle # cPickle is faster for Python 2.X 
 import os # Open function
-import random
 import applytransformations as atf
 
 # Training function:
@@ -137,9 +136,6 @@ def train():
 		print("y.shape: " + str(y.shape))
 		classifier.fit(x, y)
 	'''
-
-	random.shuffle(data)
-	random.shuffle(labels)
 
 	#classifier.fit(np.array(data)[:len(data)/2], np.array(labels)[:len(labels)/2])
 	classifier.fit(np.array(data[:5000]), np.array(labels[:5000]))

@@ -39,6 +39,7 @@ def loadImages(imgFolder):
 	return [pickle.load(open(imgFolder+"/20150423_152021.dat", "rb"))]
 	
 	#return data
+	#return [pickle.load(open(imgFolder+"/"+fileName, "rb")) for fileName in sorted(os.listdir(imgFolder))]
 
 # Main function:
 def transform():
