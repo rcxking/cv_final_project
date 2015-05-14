@@ -413,7 +413,7 @@ def testCluster(
 
   error = calculateError(ground_truth, estimates)
   print "Mean minimum distance to nearest estimate:", error
-  return error
+  return error, float(estimates.shape[1]) / number_points_of_interest
 
 if __name__ == "__main__":
   testCluster()
