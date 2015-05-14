@@ -115,7 +115,7 @@ def meanShift(points):
   centers = meanshift.cluster_centers_
   return np.array(labels)
 
-def analyzeClusters(points, labels, plot_result = True, ground_truth = None):
+def analyzeClusters(points, labels, plot_data = False, ground_truth = None):
   colors = ['b', 'c', 'g', 'y', 'm', 'r', 'k']
 
   max_label = np.max(labels)
@@ -135,7 +135,7 @@ def analyzeClusters(points, labels, plot_result = True, ground_truth = None):
     print "Ground truth:", ground_truth
 
   # plotting
-  if plot_result:
+  if plot_data:
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     for ii in range(len(clusters)):
@@ -190,8 +190,9 @@ def interSectionPerLine(points,
                         directions,
                         threshold = 0.1,
                         bounds = (0,1,0,1,0,1),
-                        plot_result = True,
+                        plot_data = False,
                         ground_truth = None):
+  print "intersectionPerLine"
   num_point = points.shape[1]
 
   intersections_by_line = []
@@ -216,7 +217,7 @@ def interSectionPerLine(points,
   intersections_by_line = np.array(intersections_by_line).T
 
   max_count = max(counts_by_line)
-  if plot_result:
+  if plot_data:
     # plot figure for correspondence
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -233,10 +234,10 @@ def intersectionByDistance(points,
             directions,
             threshold = 0.1,
             bounds = (0,1,0,1,0,1),
-            plot_result = True,
+            plot_data = False,
             ground_truth = None
             ):
-  print "Clustering"
+  print "intersectionByDistance"
   num_point = points.shape[1]
 
   correspondence_points = []
@@ -253,7 +254,7 @@ def intersectionByDistance(points,
   correspondence_points = np.array(correspondence_points).T
   print correspondence_points.shape
 
-  if plot_result:
+  if plot_data:
     # plot figure for correspondence
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -283,6 +284,7 @@ def plotLines(points, directions):
   plt.show()
 
 def filterDistance(points, threshold):
+  print "filterDistance"
   filtered = []
   good = np.zeros(points.shape[1])
   for ii in range(points.shape[1]):
@@ -341,7 +343,7 @@ def estimatePoints(
     intersection_per_line = True,
     filter_distance = True,
     kmeans = False,
-    plot_data = True
+    plot_data = False
     ):
   intersections = None
   counts = None
@@ -350,7 +352,9 @@ def estimatePoints(
         ground_truth = ground_truth, threshold = threshold)
   else:
     intersections = intersectionByDistance(points, directions, \
-        ground_truth = ground_truth, threshold = threshold)
+        ground_truth = ground_truth, threshold = threshold,
+        plot_data = plot_data
+        )
 
   if filter_distance:
     intersections = filterDistance(intersections, threshold)
@@ -360,10 +364,15 @@ def estimatePoints(
     labels = kMeans(intersections)
   else:
     labels = connectedClusters(intersections, threshold*2)
-  print "Labels", labels
-  centers = analyzeClusters(intersections, labels, plot_result = True,
+  centers = analyzeClusters(intersections, labels, plot_data = plot_data,
       ground_truth = ground_truth)
   return centers
+
+def calculateError(ground_truth, estimates):
+  error_vec = np.zeros(ground_truth.shape[1])
+  for ii in range(ground_truth.shape[1]):
+    error_vec[ii] = min([np.linalg.norm(estimates[:,jj] - ground_truth[:,ii]) for jj in range(estimates.shape[1])])
+  return np.mean(error_vec)
 
 '''
 Test line clustering algorithm
@@ -382,7 +391,7 @@ def testCluster(
     intersection_per_line = True,
     filter_distance = True,
     kmeans = False,
-    plot_data = True
+    plot_data = False
     ):
 
   points, directions, ground_truth = simulateData( \
@@ -401,6 +410,9 @@ def testCluster(
       kmeans = kmeans,
       plot_data = plot_data
       )
+
+  error = calculateError(ground_truth, estimates)
+  print "Mean minimum distance to nearest estimate:", error
 
 if __name__ == "__main__":
   testCluster()
