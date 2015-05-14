@@ -107,9 +107,6 @@ def connectedClusters(points, threshold):
     labels[clusters[ii]] = ii
   return labels
 
-
-
-
 def meanShift(points):
   # perform meanshift clustering of data
   meanshift = MeanShift()
@@ -191,7 +188,7 @@ def bestIntersection(p1, d1, intersections, threshold):
 
 def interSectionPerLine(points, 
                         directions,
-                        threshold_distance = 0.1,
+                        threshold = 0.1,
                         bounds = (0,1,0,1,0,1),
                         plot_result = True,
                         ground_truth = None):
@@ -208,11 +205,11 @@ def interSectionPerLine(points,
       if not jj == ii:
         p2 = points[:,jj]
         d2 = directions[:,jj]
-        intersection = computeIntersection(p1, d1, p2, d2, threshold_distance, bounds)
+        intersection = computeIntersection(p1, d1, p2, d2, threshold, bounds)
         if not intersection is None:
           intersections.append(intersection)
     intersections = np.array(intersections).T
-    intersection, count = bestIntersection(p1, d1, intersections, threshold_distance)
+    intersection, count = bestIntersection(p1, d1, intersections, threshold)
     #assert(inBounds(intersection, bounds))
     intersections_by_line.append(intersection)
     counts_by_line.append(count)
@@ -232,13 +229,13 @@ def interSectionPerLine(points,
 
   return intersections_by_line, counts_by_line
 
-def cluster(points, 
+def intersectionByDistance(points, 
             directions,
-            threshold_distance = 0.1,
+            threshold = 0.1,
             bounds = (0,1,0,1,0,1),
             plot_result = True,
-            ground_truth = None,
-            cluster_method = kMeans):
+            ground_truth = None
+            ):
   print "Clustering"
   num_point = points.shape[1]
 
@@ -264,8 +261,7 @@ def cluster(points,
     if not ground_truth is None:
       ax.scatter(ground_truth[0,:], ground_truth[1,:], ground_truth[2,:], c='r', marker='o')
     plt.show()
-  labels = cluster_method(correspondence_points)
-  centers = analyzeClusters(correspondence_points, labels, plot_result = plot_result)
+  return correspondence_points
 
 def plotLines(points, directions):
   fig = plt.figure()
@@ -301,21 +297,14 @@ def filterDistance(points, threshold):
   return filtered
 
 '''
-Test line clustering algorithm
-Considering lines contained in the unit cube
-1. generate points of interest
-2. generate normally distributed observations and directions around points of
-interest
-3. generate large number of false positives uniformly in unit cube
-4. run clustering on observations and false positives
+Generate simulation data
 '''
-def testCluster(
+def simulateData(
     number_points_of_interest = 4,
     number_observation = 10,
-    sigma_observation = 0.03,
-    false_positives_per_observation = 2
+    sigma_observation = 0.06,
+    false_positives_per_observation = 2,
     ):
-
   points_of_interest = np.random.ranf((3,number_points_of_interest))
   print "Points of interest"
   print points_of_interest
@@ -342,13 +331,76 @@ def testCluster(
 
   points = np.hstack([observation_points, false_positive_points])
   directions = np.hstack([observation_directions, false_positive_directions])
-  #plotLines(points, directions)
-  intersections, counts = interSectionPerLine(points, directions, ground_truth = points_of_interest,
-      threshold_distance = sigma_observation)
-  filtered_intersections = filterDistance(intersections, sigma_observation)
-  labels = connectedClusters(filtered_intersections, sigma_observation*2)
+  return points, directions, points_of_interest
+
+def estimatePoints(
+    points,
+    directions,
+    ground_truth,
+    threshold = 0.05,
+    intersection_per_line = True,
+    filter_distance = True,
+    kmeans = False,
+    plot_data = True
+    ):
+  intersections = None
+  counts = None
+  if intersection_per_line:
+    intersections, counts = interSectionPerLine(points, directions, \
+        ground_truth = ground_truth, threshold = threshold)
+  else:
+    intersections = intersectionByDistance(points, directions, \
+        ground_truth = ground_truth, threshold = threshold)
+
+  if filter_distance:
+    intersections = filterDistance(intersections, threshold)
+  labels = None
+
+  if kmeans:
+    labels = kMeans(intersections)
+  else:
+    labels = connectedClusters(intersections, threshold*2)
   print "Labels", labels
-  centers = analyzeClusters(filtered_intersections, labels, plot_result = True, ground_truth = points_of_interest)
+  centers = analyzeClusters(intersections, labels, plot_result = True,
+      ground_truth = ground_truth)
+  return centers
+
+'''
+Test line clustering algorithm
+Considering lines contained in the unit cube
+1. generate points of interest
+2. generate normally distributed observations and directions around points of
+interest
+3. generate large number of false positives uniformly in unit cube
+4. run clustering on observations and false positives
+'''
+def testCluster(
+    number_points_of_interest = 4,
+    number_observation = 10,
+    sigma_observation = 0.06,
+    false_positives_per_observation = 2,
+    intersection_per_line = True,
+    filter_distance = True,
+    kmeans = False,
+    plot_data = True
+    ):
+
+  points, directions, ground_truth = simulateData( \
+      number_points_of_interest = number_points_of_interest,
+      number_observation = number_observation,
+      sigma_observation = sigma_observation,
+      false_positives_per_observation = false_positives_per_observation)
+  if plot_data:
+    plotLines(points, directions)
+
+  estimates = estimatePoints(
+      points, directions, ground_truth,
+      threshold = sigma_observation,
+      intersection_per_line = intersection_per_line,
+      filter_distance = filter_distance,
+      kmeans = kmeans,
+      plot_data = plot_data
+      )
 
 if __name__ == "__main__":
   testCluster()
