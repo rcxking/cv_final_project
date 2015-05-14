@@ -283,7 +283,7 @@ def plotLines(points, directions):
   #plt.axis([0,1,0,1,0,1])
   plt.show()
 
-def filterDistance(points, threshold):
+def filterDistance(points, threshold, plot_data=False, ground_truth=None):
   print "filterDistance"
   filtered = []
   good = np.zeros(points.shape[1])
@@ -296,6 +296,15 @@ def filterDistance(points, threshold):
           filtered.append(points[:,ii])
           filtered.append(points[:,jj])
   filtered = np.array(filtered).T
+
+  if plot_data:
+    # plot figure for correspondence
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(filtered[0,:], filtered[1,:], filtered[2,:], c='b', marker='x')
+    if not ground_truth is None:
+      ax.scatter(ground_truth[0,:], ground_truth[1,:], ground_truth[2,:], c='r', marker='o')
+    plt.show()
   return filtered
 
 '''
@@ -349,7 +358,8 @@ def estimatePoints(
   counts = None
   if intersection_per_line:
     intersections, counts = interSectionPerLine(points, directions, \
-        ground_truth = ground_truth, threshold = threshold)
+        ground_truth = ground_truth, threshold = threshold,
+        plot_data = plot_data)
   else:
     intersections = intersectionByDistance(points, directions, \
         ground_truth = ground_truth, threshold = threshold,
@@ -357,7 +367,8 @@ def estimatePoints(
         )
 
   if filter_distance:
-    intersections = filterDistance(intersections, threshold)
+    intersections = filterDistance(intersections, threshold,
+        plot_data=plot_data,ground_truth=ground_truth)
   labels = None
 
   if kmeans:
