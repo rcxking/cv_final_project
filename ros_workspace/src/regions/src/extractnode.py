@@ -7,7 +7,7 @@ Bryant Pong / Micah Corah
 CSCI-4962
 4/30/15
 
-Last Updated: Bryant Pong: 5/14/15 - 4:06 PM
+Last Updated: Bryant Pong: 5/15/15 - 1:25 AM
 '''
 
 # Python Imports:
@@ -45,12 +45,8 @@ def main():
 		# frame is in BGR color space:
 		#ret, frame = camera.read()
 
-		frame = cv2.imread("/home/bryant/cv_final_project/data/images/003/IMG_29.jpg")
+		frame = cv2.imread("/home/bryant/img1.jpg")
 		frame = frame[:,:,::-1]
-
-		# DEBUG ONLY - Print out the size of the frame:
-		# Laptop camera returns images of dimension (640 x 480)
-		#print("frame dimensions: " + str(frame.shape))
 
 		# Resize the images such that the images are of dimension (640x360):
 		resizedFrame = cv2.resize(frame, (640, 360)) 

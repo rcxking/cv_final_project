@@ -69,9 +69,6 @@ def train():
 	for nextData in trainingData:
 
 		print("Now processing image: " + str(curNum) + " out of: " + str(len(trainingData)) + " images")
-		#print("nextImage: " + str(nextData[0]))
-		#print("nextFeatures: " + str(nextData[1]))
-
 		# Now run the sliding window algorithm:
 		windows = sw.slidingWindow(nextData[0], swWidth, swHeight)  
 
@@ -85,19 +82,14 @@ def train():
 		This results in 24 windows:
 		'''  
 		nextLabels = np.zeros((3, 8))
-		#print("nextLabels: " + str(nextLabels))
 
 		# For each feature, determine the appropriate window:
 		for feature in nextData[1]:
 
-			#print("feature: " + str(feature))
 			# Calculate which window to be in:
 			winRow = feature[1] / swHeight
 			winCol = feature[0] / swWidth	
 			
-			#print("winRow: " + str(winRow))
-			#print("winCol: " + str(winCol))	 		  	      
-
 			# Check for negative coordinates:
 			if winRow >= 0 and winCol >= 0 and winRow < 3 and winCol < 8:
 				nextLabels[int(winRow),int(winCol)] = 1
@@ -108,8 +100,6 @@ def train():
 				goodWindows.append(windows[i].flatten().tolist())
 				goodFeatures.append(nextLabels.flatten().tolist()[i])
 
-		#print("goodWindows len: " + str(len(goodWindows)))
-		#print("goodFeatures len: " + str(len(goodFeatures)))
 		# Extend the data and labels arrays:
 		data.extend(goodWindows)
 		labels.extend(goodFeatures)	 
@@ -137,13 +127,8 @@ def train():
 
 	# Train the neural network:
 	print("Now training classifier:")
-	#print("data[:5000]: " + str(data[:5000]))
-	#print("labels[:5000]: " + str(labels[:5000]))
-	#print("data length: " + str(len(data)))
-	#print("labels length: " + str(len(labels)))
 	print("Finally training classifier:")
 
-	#classifier.fit(np.array(data)[:len(data)/2], np.array(labels)[:len(labels)/2])
 	classifier.fit(np.array(finalData), np.array(finalLabels))
 	print("Done training classifier:")
 

@@ -25,21 +25,8 @@ to process.
 '''
 def loadImages(imgFolder):
 
-	'''
-	data = []
-
-	for fileName in sorted(os.listdir(imgFolder)):
-		# Open the next file:
-		nextFile = open(imgFolder+"/"+fileName,"rb")
-		data.append(pickle.load(nextFile))		
-		nextFile.close()
-	'''
-	
-	#return [pickle.load(open(imgFolder+"/"+fileName, "rb")) for fileName in sorted(os.listdir(imgFolder))]
 	return [pickle.load(open(imgFolder+"/20150423_152021.dat", "rb"))]
 	
-	#return data
-	#return [pickle.load(open(imgFolder+"/"+fileName, "rb")) for fileName in sorted(os.listdir(imgFolder))]
 
 # Main function:
 def transform():
@@ -63,35 +50,17 @@ def transform():
 	
 			print("Now extracting features for image : " + str(imgNum) + " of dataset: " + str(datasetNum))
 
-			#print("img is: \n" + str(img[0]))
-			#print("features are: \n" + str(img[1]))
-
 			# Extract the image and feature set from each image:
 			image = img[0]
 			features = img[1] 
-			#print("features type: " + str(type(features)))
 			imgWidth = image.shape[1]
 			imgHeight = image.shape[0]
-
-			'''
-			print("features: " + str(features))
-			print("image: ")
-			plt.imshow(image)
-			plt.show()
-			'''
 
 			# Resize the images and features:
 			resizedImage = cv2.resize(image, (int(0.5*imgWidth),int(0.5*imgHeight)))
 			resizedFeatures = features * 0.5
 
 			globalData.append( (resizedImage, resizedFeatures) )
-
-			'''
-			print("resizedFeatures: " + str(resizedFeatures))
-			print("resizedImage: ")
-			plt.imshow(resizedImage)
-			plt.show()
-			'''
 
 			'''
 			Apply the following transformations to each image:  
@@ -114,25 +83,9 @@ def transform():
 			globalData.append( (rotImg, rotFeatures) ) 
 			globalData.append( (rotImg2, rotFeatures2) )
 
-			'''
-			plt.imshow(rotImg)
-			plt.show()
-
-			plt.imshow(rotImg2)
-			plt.show()
-			'''
-
 			# Generate transformations 13 - 14 (Perspective Transformations):
 			trans13, trans13Features = tf.hTrans(resizedImage, resizedFeatures)
 			trans14, trans14Features = tf.hTrans(resizedImage, resizedFeatures)
-
-			'''
-			plt.imshow(trans13)
-			plt.show()
-
-			plt.imshow(trans14)
-			plt.show()
-			'''
 
 			globalData.append( (trans13, trans13Features))
 			globalData.append( (trans14, trans14Features))
@@ -144,21 +97,12 @@ def transform():
 			globalData.append( (trans15, resizedFeatures) )
 			globalData.append( (trans16, resizedFeatures) )
 
-			'''
-			plt.imshow(trans15)
-			plt.show()
-
-			plt.imshow(trans16)
-			plt.show()
-			'''
-
 			imgNum += 1
 
 		imgNum = 0
 
 		datasetNum += 1
 
-	#pickle.dump(globalData, open("data.p", "wb"))
 	print("data dump complete")			
 
 	return globalData
