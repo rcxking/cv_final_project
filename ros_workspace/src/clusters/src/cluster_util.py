@@ -142,8 +142,7 @@ def analyzeClusters(points, labels, plot_data = False, ground_truth = None):
       cluster = clusters[ii]
       ax.scatter(cluster[0,:], cluster[1,:], cluster[2,:], c=colors[ii], marker='x')
     ax.scatter(centers[0,:], centers[1,:], centers[2,:], c='m', marker='o')
-    if not ground_truth is None:
-      ax.scatter(ground_truth[0,:], ground_truth[1,:], ground_truth[2,:], c='r', marker='o')
+    plotGroundTruth(ax, ground_truth)
     plt.show()
   return centers
 
@@ -224,8 +223,7 @@ def interSectionPerLine(points,
     for ii in range(len(counts_by_line)):
       weight = counts_by_line[ii] / max_count
       ax.scatter(intersections_by_line[0,ii], intersections_by_line[1,ii], intersections_by_line[2,ii], c=str(weight), marker='x')
-    if not ground_truth is None:
-      ax.scatter(ground_truth[0,:], ground_truth[1,:], ground_truth[2,:], c='r', marker='o')
+    plotGroundTruth(ax, ground_truth)
     plt.show()
 
   return intersections_by_line, counts_by_line
@@ -259,12 +257,15 @@ def intersectionByDistance(points,
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.scatter(correspondence_points[0,:], correspondence_points[1,:], correspondence_points[2,:], c='b', marker='x')
-    if not ground_truth is None:
-      ax.scatter(ground_truth[0,:], ground_truth[1,:], ground_truth[2,:], c='r', marker='o')
+    plotGroundTruth(ax, ground_truth)
     plt.show()
   return correspondence_points
 
-def plotLines(points, directions):
+def plotGroundTruth(ax, ground_truth = None):
+  if not ground_truth is None:
+    ax.scatter(ground_truth[0,:], ground_truth[1,:], ground_truth[2,:], c='r', marker='o')
+
+def plotLines(points, directions, ground_truth = None):
   fig = plt.figure()
   ax = fig.add_subplot(111, projection='3d')
 
@@ -278,9 +279,7 @@ def plotLines(points, directions):
     norm_d = direction / np.linalg.norm(direction)
     ends = np.column_stack([(point - norm_d), (point + norm_d)])
     ax.plot(ends[0,:], ends[1,:], ends[2,:])
-
-
-  #plt.axis([0,1,0,1,0,1])
+  plotGroundTruth(ax, ground_truth)
   plt.show()
 
 def filterDistance(points, threshold, plot_data=False, ground_truth=None):
@@ -302,8 +301,7 @@ def filterDistance(points, threshold, plot_data=False, ground_truth=None):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.scatter(filtered[0,:], filtered[1,:], filtered[2,:], c='b', marker='x')
-    if not ground_truth is None:
-      ax.scatter(ground_truth[0,:], ground_truth[1,:], ground_truth[2,:], c='r', marker='o')
+    plotGroundTruth(ax, ground_truth)
     plt.show()
   return filtered
 
@@ -411,7 +409,7 @@ def testCluster(
       sigma_observation = sigma_observation,
       false_positives_per_observation = false_positives_per_observation)
   if plot_data:
-    plotLines(points, directions)
+    plotLines(points, directions, ground_truth)
 
   estimates = estimatePoints(
       points, directions, ground_truth,
